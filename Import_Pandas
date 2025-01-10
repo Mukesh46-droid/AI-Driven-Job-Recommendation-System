@@ -1,0 +1,49 @@
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Sample Data: Job Listings and Candidate Profiles
+jobs_data = {
+    'job_id': [1, 2, 3, 4],
+    'job_title': ['Data Scientist', 'Software Engineer', 'Product Manager', 'Data Analyst'],
+    'job_description': [
+        'Analyze data and build predictive models using machine learning.',
+        'Develop software applications and maintain existing code.',
+        'Manage product development and coordinate with teams.',
+        'Collect and analyze data to provide insights for decision making.'
+    ]
+}
+
+candidates_data = {
+    'candidate_id': [1, 2],
+    'candidate_name': ['Alice', 'Bob'],
+    'candidate_profile': [
+        'I have experience in data analysis and machine learning.',
+        'I am a software developer with skills in Java and Python.'
+    ]
+}
+
+# Create DataFrames
+jobs_df = pd.DataFrame(jobs_data)
+candidates_df = pd.DataFrame(candidates_data)
+
+# Vectorize Job Descriptions and Candidate Profiles
+tfidf_vectorizer = TfidfVectorizer()
+tfidf_jobs = tfidf_vectorizer.fit_transform(jobs_df['job_description'])
+tfidf_candidates = tfidf_vectorizer.transform(candidates_df['candidate_profile'])
+
+# Calculate Cosine Similarity
+cosine_similarities = cosine_similarity(tfidf_candidates, tfidf_jobs)
+
+# Function to get job recommendations for each candidate
+def get_job_recommendations(candidate_index):
+    similar_jobs_indices = cosine_similarities[candidate_index].argsort()[::-1]
+    recommended_jobs = jobs_df.iloc[similar_jobs_indices]
+    return recommended_jobs[['job_title', 'job_description']]
+
+# Display Recommendations for Each Candidate
+for index, row in candidates_df.iterrows():
+    print(f"\nRecommendations for {row['candidate_name']}:\n")
+    recommendations = get_job_recommendations(index)
+    print(recommendations)
+
